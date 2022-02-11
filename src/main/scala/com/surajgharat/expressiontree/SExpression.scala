@@ -62,117 +62,119 @@ class SExpression(
     this(Operation, opType.resultType, None, None, Some(opType), args.toArray)
   }
 
-  def compile(schema:RecordSchema): CExpression = {
+  def compile(): CExpression = {
     etype match {
       case SExpType.Constant  => compileConstant()
-      case SExpType.Variable  => compileVariable(path.get, schema);
-      case SExpType.Operation => compileOperation(schema)
+      case SExpType.Variable  => compileVariable(path.get, rtype);
+      case SExpType.Operation => compileOperation()
     }
   }
 
   private def compileConstant(): CExpression = {
     rtype match {
       case DataType.Number =>
-        new CExpression2[Float](_ => tryValue())
+        new CExpressionImpl[Float](_ => tryValue())
+      case DataType.Bool =>
+        new CExpressionImpl[Boolean](_ => tryValue())
+      case DataType.Text =>
+        new CExpressionImpl[String](_ => tryValue())
     }
   }
 
-  private def compileVariable(key:String, schema:RecordSchema) : CExpression = {
-    schema.schema.get(key) match {
-        case Some(dt) => compileVariable(key, dt)
-        case None => new CExpression2[Float](_ => Failure(new Exception(s"Undefined schema for key $key")))
-    }
-  }
-
-  private def compileVariable(key:String, dt:DataType) : CExpression = {
+  private def compileVariable(key: String, dt: DataType): CExpression = {
     dt match {
-        case DataType.Bool => new CExpression2[Boolean](req => Try(req.record.get[Boolean](key).get))
-        case DataType.Number => new CExpression2[Float](req => Try(req.record.get[Float](key).get))
-        case DataType.Text => new CExpression2[String](req => Try(req.record.get[String](key).get))
+      case DataType.Bool =>
+        new CExpressionImpl[Boolean](req =>
+          Try(req.record.get[Boolean](key).get)
+        )
+      case DataType.Number =>
+        new CExpressionImpl[Float](req => Try(req.record.get[Float](key).get))
+      case DataType.Text =>
+        new CExpressionImpl[String](req => Try(req.record.get[String](key).get))
     }
   }
 
-  private def compileOperation(schema:RecordSchema): CExpression = {
+  private def compileOperation(): CExpression = {
     otype.get match {
       case SExpOpType.AddOpr =>
-        val e1 = args(0).compile(schema).asInstanceOf[CExpression2[Float]]
-        val e2 = args(1).compile(schema).asInstanceOf[CExpression2[Float]]
-        CExpression.addOpr2(e1, e2)
+        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[Float]]
+        val e2 = args(1).compile().asInstanceOf[CExpressionImpl[Float]]
+        CExpression.addOpr(e1, e2)
 
       case SExpOpType.SubtractOpr =>
-        val e1 = args(0).compile(schema).asInstanceOf[CExpression2[Float]]
-        val e2 = args(1).compile(schema).asInstanceOf[CExpression2[Float]]
+        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[Float]]
+        val e2 = args(1).compile().asInstanceOf[CExpressionImpl[Float]]
         CExpression.subtractOpr(e1, e2)
 
       case SExpOpType.MultiplyOpr =>
-        val e1 = args(0).compile(schema).asInstanceOf[CExpression2[Float]]
-        val e2 = args(1).compile(schema).asInstanceOf[CExpression2[Float]]
+        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[Float]]
+        val e2 = args(1).compile().asInstanceOf[CExpressionImpl[Float]]
         CExpression.multiplyOpr(e1, e2)
 
       case SExpOpType.DivideOpr =>
-        val e1 = args(0).compile(schema).asInstanceOf[CExpression2[Float]]
-        val e2 = args(1).compile(schema).asInstanceOf[CExpression2[Float]]
+        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[Float]]
+        val e2 = args(1).compile().asInstanceOf[CExpressionImpl[Float]]
         CExpression.divideOpr(e1, e2)
 
       case SExpOpType.ModuleOpr =>
-        val e1 = args(0).compile(schema).asInstanceOf[CExpression2[Float]]
-        val e2 = args(1).compile(schema).asInstanceOf[CExpression2[Float]]
+        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[Float]]
+        val e2 = args(1).compile().asInstanceOf[CExpressionImpl[Float]]
         CExpression.moduleOpr(e1, e2)
 
       case SExpOpType.GteOpr =>
-        val e1 = args(0).compile(schema).asInstanceOf[CExpression2[Float]]
-        val e2 = args(1).compile(schema).asInstanceOf[CExpression2[Float]]
+        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[Float]]
+        val e2 = args(1).compile().asInstanceOf[CExpressionImpl[Float]]
         CExpression.gteOpr(e1, e2)
 
       case SExpOpType.GtOpr =>
-        val e1 = args(0).compile(schema).asInstanceOf[CExpression2[Float]]
-        val e2 = args(1).compile(schema).asInstanceOf[CExpression2[Float]]
+        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[Float]]
+        val e2 = args(1).compile().asInstanceOf[CExpressionImpl[Float]]
         CExpression.gtOpr(e1, e2)
 
       case SExpOpType.LteOpr =>
-        val e1 = args(0).compile(schema).asInstanceOf[CExpression2[Float]]
-        val e2 = args(1).compile(schema).asInstanceOf[CExpression2[Float]]
+        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[Float]]
+        val e2 = args(1).compile().asInstanceOf[CExpressionImpl[Float]]
         CExpression.lteOpr(e1, e2)
 
       case SExpOpType.LtOpr =>
-        val e1 = args(0).compile(schema).asInstanceOf[CExpression2[Float]]
-        val e2 = args(1).compile(schema).asInstanceOf[CExpression2[Float]]
+        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[Float]]
+        val e2 = args(1).compile().asInstanceOf[CExpressionImpl[Float]]
         CExpression.ltOpr(e1, e2)
 
       case SExpOpType.EqOpr =>
-        val e1 = args(0).compile(schema).asInstanceOf[CExpression2[Float]]
-        val e2 = args(1).compile(schema).asInstanceOf[CExpression2[Float]]
+        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[Float]]
+        val e2 = args(1).compile().asInstanceOf[CExpressionImpl[Float]]
         CExpression.eqOpr(e1, e2)
 
       case SExpOpType.NeqOpr =>
-        val e1 = args(0).compile(schema).asInstanceOf[CExpression2[Float]]
-        val e2 = args(1).compile(schema).asInstanceOf[CExpression2[Float]]
+        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[Float]]
+        val e2 = args(1).compile().asInstanceOf[CExpressionImpl[Float]]
         CExpression.neqOpr(e1, e2)
 
       case SExpOpType.AndOpr =>
-        val e1 = args(0).compile(schema).asInstanceOf[CExpression2[Boolean]]
-        val e2 = args(1).compile(schema).asInstanceOf[CExpression2[Boolean]]
+        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[Boolean]]
+        val e2 = args(1).compile().asInstanceOf[CExpressionImpl[Boolean]]
         CExpression.andOpr(e1, e2)
 
       case SExpOpType.OrOpr =>
-        val e1 = args(0).compile(schema).asInstanceOf[CExpression2[Boolean]]
-        val e2 = args(1).compile(schema).asInstanceOf[CExpression2[Boolean]]
+        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[Boolean]]
+        val e2 = args(1).compile().asInstanceOf[CExpressionImpl[Boolean]]
         CExpression.orOpr(e1, e2)
 
-    case SExpOpType.NegateOpr =>
-        val e1 = args(0).compile(schema).asInstanceOf[CExpression2[Boolean]]
+      case SExpOpType.NegateOpr =>
+        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[Boolean]]
         CExpression.negateOpr(e1)
     }
   }
 
-  private def tryValue(): Try[Float] =
-    value.fold[Try[Float]](Failure(new Exception(s"Given value is null")))(
-      toFloat _
+  private def tryValue[T](): Try[T] =
+    value.fold[Try[T]](Failure(new Exception(s"Given value is null")))(
+      toType[T](_)
     )
 
-  private def toFloat(obj: Any): Try[Float] = obj match {
-    case n1: Float => Success(n1)
-    case _ => Failure(new Exception(s"Given value is not a number [$obj]"))
+  private def toType[T](obj: Any): Try[T] = obj match {
+    case n1: T => Success(n1)
+    case _     => Failure(new Exception(s"Given value is not a number [$obj]"))
   }
 }
 

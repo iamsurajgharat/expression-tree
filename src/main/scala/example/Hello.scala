@@ -9,7 +9,7 @@ object Hello extends Greeting with App {
   val e4 = SExpression.constant(55)
   val e5 = SExpression.operation(SExpOpType.GtOpr, e3, e4)
   println(java.time.LocalDateTime.now())
-  val ce = e5.compile(recordSchema)
+  val ce = e5.compile()
   println(java.time.LocalDateTime.now())
   println(ce.eval(null))
   println(java.time.LocalDateTime.now())
