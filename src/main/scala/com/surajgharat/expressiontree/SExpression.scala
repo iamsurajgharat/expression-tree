@@ -90,7 +90,12 @@ class SExpression(
       case DataType.Number =>
         new CExpressionImpl[Float](req => Try(req.record.get[Float](key).get))
       case DataType.Text =>
-        new CExpressionImpl[String](req => Try(req.record.get[String](key).get))
+        new CExpressionImpl[String](req =>
+          {
+          val r = Try(req.record.get[String](key).get)
+          r
+        }
+      )
     }
   }
 
@@ -174,7 +179,7 @@ class SExpression(
 
   private def toType[T](obj: Any): Try[T] = obj match {
     case n1: T => Success(n1)
-    case _     => Failure(new Exception(s"Given value is not a number [$obj]"))
+    case _     => Failure(new Exception(s"Given value is not of expected type [$obj]"))
   }
 }
 

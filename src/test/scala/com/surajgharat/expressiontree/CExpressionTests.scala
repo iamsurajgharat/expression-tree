@@ -73,4 +73,24 @@ class CExpressionTests extends AnyFlatSpec with Matchers {
         // assure
         result shouldBe Success(234f + 55)
     }
+
+    it should "return error if the operand is not number" in {
+        val e1 = SExpression.variable("field1", DataType.Text)
+        val e2 = SExpression.constant(10)
+        val e3 = SExpression.operation(SExpOpType.AddOpr, e1, e2)
+        val result = e3.compile().eval(ExpressionRequest(record1, null))
+
+        // assure
+        result shouldBe scala.util.Failure(new Exception("sdsf"))
+    }
+    
+    "The SubtractOpr" should "return correct sum" in {
+        val e1 = SExpression.variable("field2", DataType.Number)
+        val e2 = SExpression.constant(55)
+        val e3 = SExpression.operation(SExpOpType.SubtractOpr, e1, e2)
+        val result = e3.compile().eval(ExpressionRequest(record1, null))
+
+        // assure
+        result shouldBe Success(234f - 55)
+    }
 }

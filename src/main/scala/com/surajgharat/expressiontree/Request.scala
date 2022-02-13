@@ -16,9 +16,7 @@ class RecordImpl(private val data: Map[String, Any]) extends Record {
   def this() = this(Map.empty[String, Any])
   def getAny(path: String): Option[Any] = data.get(path)
   def get[T](path: String): Option[T] = data.get(path).map(_.asInstanceOf[T])
-  def put[T](path: String, value: T): Record = new RecordImpl(
-    data + (path -> value)
-  )
+  def put[T](path: String, value: T): Record = new RecordImpl(data + (path -> value))
   def remove(path: String): Record = new RecordImpl(data - path)
 }
 
