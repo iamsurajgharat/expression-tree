@@ -75,9 +75,9 @@ class SExpression(
       case DataType.Number =>
         new CExpressionImpl[Float](_ => tryValue())
       case DataType.Bool =>
-        new CExpressionImpl[Boolean](_ => tryValue())
+        new CExpressionImpl[Option[Option[Boolean]]](_ => tryValue())
       case DataType.Text =>
-        new CExpressionImpl[String](_ => tryValue())
+        new CExpressionImpl[Option[String]](_ => tryValue())
     }
   }
 
@@ -85,17 +85,10 @@ class SExpression(
     dt match {
       case DataType.Bool =>
         new CExpressionImpl[Boolean](req =>
-          Try(req.record.get[Boolean](key).get)
+          Try(req.record.get[Boolean](key))
         )
-      case DataType.Number =>
-        new CExpressionImpl[Float](req => Try(req.record.get[Float](key).get))
-      case DataType.Text =>
-        new CExpressionImpl[String](req =>
-          {
-          val r = Try(req.record.get[String](key).get)
-          r
-        }
-      )
+      case DataType.Number => new CExpressionImpl[Float](req => Try(req.record.get[Float](key)))
+      case DataType.Text => new CExpressionImpl[String](req => Try(req.record.get[String](key)))
     }
   }
 
@@ -172,13 +165,13 @@ class SExpression(
     }
   }
 
-  private def tryValue[T](): Try[T] =
-    value.fold[Try[T]](Failure(new Exception(s"Given value is null")))(
+  private def tryValue[T](): Try[Option[T]] =
+    value.fold[Try[Option[T]]](Failure(new Exception(s"Given value is null")))(
       toType[T](_)
     )
 
-  private def toType[T](obj: Any): Try[T] = obj match {
-    case n1: T => Success(n1)
+  private def toType[T](obj: Any): Try[Option[T]] = obj match {
+    case n1: T => Success(Some(n1))
     case _     => Failure(new Exception(s"Given value is not of expected type [$obj]"))
   }
 }

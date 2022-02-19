@@ -21,7 +21,7 @@ class CExpressionTests extends AnyFlatSpec with Matchers {
         val result = e1.compile().eval(null)
 
         // assure
-        result shouldBe Success(10f)
+        result shouldBe Success(Some(10f))
     }
 
     it should "return correct bool value" in {
@@ -29,7 +29,7 @@ class CExpressionTests extends AnyFlatSpec with Matchers {
         val result = e1.compile().eval(null)
 
         // assure
-        result shouldBe Success(true)
+        result shouldBe Success(Some(true))
     }
 
     it should "return correct test value" in {
@@ -37,7 +37,7 @@ class CExpressionTests extends AnyFlatSpec with Matchers {
         val result = e1.compile().eval(null)
 
         // assure
-        result shouldBe Success("Harry Potter")
+        result shouldBe Success(Some("Harry Potter"))
     }
 
     "A variable CExpression" should "return correct number value" in {
@@ -45,7 +45,7 @@ class CExpressionTests extends AnyFlatSpec with Matchers {
         val result = e1.compile().eval(ExpressionRequest(record1, null))
 
         // assure
-        result shouldBe Success(234f)
+        result shouldBe Success(Some(234f))
     }
 
     it should "return correct text value" in {
@@ -53,7 +53,7 @@ class CExpressionTests extends AnyFlatSpec with Matchers {
         val result = e1.compile().eval(ExpressionRequest(record1, null))
 
         // assure
-        result shouldBe Success("ABCD")
+        result shouldBe Success(Some("ABCD"))
     }
 
     it should "return correct bool value" in {
@@ -61,7 +61,7 @@ class CExpressionTests extends AnyFlatSpec with Matchers {
         val result = e1.compile().eval(ExpressionRequest(record1, null))
 
         // assure
-        result shouldBe Success(true)
+        result shouldBe Success(Some(true))
     }
 
     "The AddOpr" should "return correct sum" in {
@@ -71,7 +71,7 @@ class CExpressionTests extends AnyFlatSpec with Matchers {
         val result = e3.compile().eval(ExpressionRequest(record1, null))
 
         // assure
-        result shouldBe Success(234f + 55)
+        result shouldBe Success(Some(234f + 55))
     }
 
     it should "return error if the operand is not number" in {
@@ -81,7 +81,21 @@ class CExpressionTests extends AnyFlatSpec with Matchers {
         val result = e3.compile().eval(ExpressionRequest(record1, null))
 
         // assure
-        result shouldBe scala.util.Failure(new Exception("sdsf"))
+        val failure = result.asInstanceOf[scala.util.Failure[Throwable]]
+        failure should not be null
+        failure.exception.getMessage() should include ("while evaluating binary op [+]")
+    }
+
+    it should "return error if the operand is blank/null" in {
+        val e1 = SExpression.variable("field5", DataType.Number)
+        val e2 = SExpression.constant(10)
+        val e3 = SExpression.operation(SExpOpType.AddOpr, e1, e2)
+        val result = e3.compile().eval(ExpressionRequest(record1, null))
+
+        // assure
+        val failure = result.asInstanceOf[scala.util.Failure[Throwable]]
+        failure should not be null
+        failure.exception.getMessage() should include ("while evaluating binary op [+]")
     }
     
     "The SubtractOpr" should "return correct sum" in {
@@ -91,6 +105,6 @@ class CExpressionTests extends AnyFlatSpec with Matchers {
         val result = e3.compile().eval(ExpressionRequest(record1, null))
 
         // assure
-        result shouldBe Success(234f - 55)
+        result shouldBe Success(Some(234f - 55))
     }
 }

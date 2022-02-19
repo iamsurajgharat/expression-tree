@@ -4,7 +4,7 @@ import scala.util.Success
 import scala.util.Failure
 
 trait CExpression {
-  def eval(request: ExpressionRequest): Try[Any]
+  def eval(request: ExpressionRequest): Try[Option[Any]]
 }
 
 object CExpression {
@@ -88,7 +88,7 @@ object CExpression {
 
   def negateOpr(
       e1: CExpressionImpl[Boolean]
-  ): CExpressionImpl[Boolean] = unaryOpr[Boolean, Boolean](e1, x => !x)
+  ): CExpressionImpl[Boolean] = unaryOpr[Boolean, Boolean](e1, x => !x, "!")
 
   private def binaryOpr[T1, T2, T3](
       e1: CExpressionImpl[T1],
@@ -97,26 +97,51 @@ object CExpression {
       name: String
   ): CExpressionImpl[T3] =
     new CExpressionImpl[T3](request => {
-      val r2 = for {
-        n21 <- e1.eval(request)
-        n22 <- e2.eval(request)
-      } yield handler(n21, n22)
 
-      /*val result = Try{
-        val n1 = e1.eval(request)
-        val n2 = e2.eval(request)
-        val n11 = n1.get
-        val n12 = n2.get
-        val n3 = handler(n11,n12)
-        n3
-      }*/
+      val result = for {
+        n1 <- e1.eval(request)
+        n2 <- e2.eval(request)
+        r1 <- performBinaryOpWithRequiredCheck(n1, n2, handler, name)
+      } yield r1
 
-      r2 match {
-        case Success(value) => r2
-        case Failure(exception) if exception.isInstanceOf[ClassCastException] =>
+      result match {
+        case Success(value) => result
+        case Failure(exception) =>
           Failure(
             new Exception(
-              s"Error ${exception.getMessage()} while evaluation binary op ${name}"
+              s"Error [${exception.getMessage()}] while evaluating binary op [${name}]"
+            )
+          )
+      }
+    })
+
+    private def performBinaryOpWithRequiredCheck[T1,T2,T3](p1:Option[T1], p2:Option[T2], handler:(T1,T2) => T3, opName:String):Try[Option[T3]] = {
+      (p1, p2) match {
+        case (Some(a1), Some(a2)) => Success(Some(handler(a1,a2)))
+        case _ =>
+          Failure(new Exception(s"One or both arguments were not provided for binary operation [$opName]"))
+      }
+    }
+
+  private def binaryOptionOpr[T1, T2, T3](
+      e1: CExpressionImpl[T1],
+      e2: CExpressionImpl[T2],
+      handler: (Option[T1], Option[T2]) => Option[T3],
+      name: String
+  ): CExpressionImpl[T3] =
+    new CExpressionImpl[T3](request => {
+
+      val result = for {
+        n1 <- e1.eval(request)
+        n2 <- e2.eval(request)
+      } yield handler(n1, n2)
+
+      result match {
+        case Success(value) => result
+        case Failure(exception) =>
+          Failure(
+            new Exception(
+              s"Error [${exception.getMessage()}] while evaluating binary op [${name}]"
             )
           )
       }
@@ -124,19 +149,29 @@ object CExpression {
 
   private def unaryOpr[T1, T2](
       e1: CExpressionImpl[T1],
-      handler: T1 => T2
+      handler: T1 => T2,
+      name: String
   ): CExpressionImpl[T2] =
     new CExpressionImpl[T2](request => {
       for {
         n1 <- e1.eval(request)
-      } yield handler(n1)
+        r1 <- performUnaryOpWithRequiredCheck(n1, handler, name)
+      } yield r1
     })
+
+    private def performUnaryOpWithRequiredCheck[T1,T2](p1:Option[T1], handler:(T1) => T2, opName:String):Try[Option[T2]] = {
+      p1 match {
+        case Some(a1) => Success(Some(handler(a1)))
+        case _ =>
+          Failure(new Exception(s"The agument was not provided for uniary operation [$opName]"))
+      }
+    }
 
 }
 
-class CExpressionImpl[T](func: ExpressionRequest => Try[T])
+class CExpressionImpl[T](func: ExpressionRequest => Try[Option[T]])
     extends CExpression {
-  def eval(request: ExpressionRequest): Try[T] = {
+  def eval(request: ExpressionRequest): Try[Option[T]] = {
     val result = func(request)
     result
   }
