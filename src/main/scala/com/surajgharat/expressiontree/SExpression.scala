@@ -85,10 +85,10 @@ class SExpression(
     dt match {
       case DataType.Bool =>
         new CExpressionImpl[Boolean](req =>
-          Try(req.record.get[Boolean](key))
+            Try(req.record.get[Bool](key).map(_.get().asInstanceOf[Boolean]))
         )
-      case DataType.Number => new CExpressionImpl[Float](req => Try(req.record.get[Float](key)))
-      case DataType.Text => new CExpressionImpl[String](req => Try(req.record.get[String](key)))
+      case DataType.Number => new CExpressionImpl[Float](req => Try(req.record.get[Number](key).map(_.get().asInstanceOf[Float])))
+      case DataType.Text => new CExpressionImpl[String](req => Try(req.record.get[Text](key).map(_.get().asInstanceOf[String])))
     }
   }
 

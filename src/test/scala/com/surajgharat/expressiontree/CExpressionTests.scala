@@ -12,9 +12,9 @@ class CExpressionTests extends AnyFlatSpec with Matchers {
     ))
 
     val record1 = new RecordImpl().
-                        put("field1", "ABCD").
-                        put("field2", 234f).
-                        put("field3", true)
+                        put[Text]("field1", "ABCD").
+                        put[Number]("field2", 234f).
+                        put[Bool]("field3", true)
 
     "A constant CExpression" should "return correct number value" in {
         val e1 = SExpression.constant(10)
@@ -106,5 +106,123 @@ class CExpressionTests extends AnyFlatSpec with Matchers {
 
         // assure
         result shouldBe Success(Some(234f - 55))
+    }
+
+    "The MultiplyOpr" should "return correct result" in {
+        val e1 = SExpression.variable("field2", DataType.Number)
+        val e2 = SExpression.constant(55)
+        val e3 = SExpression.operation(SExpOpType.MultiplyOpr, e1, e2)
+        val result = e3.compile().eval(ExpressionRequest(record1, null))
+
+        // assure
+        result shouldBe Success(Some(234f * 55))
+    }
+
+    "The DivideOpr" should "return correct result" in {
+        val e1 = SExpression.variable("field2", DataType.Number)
+        val e2 = SExpression.constant(55)
+        val e3 = SExpression.operation(SExpOpType.DivideOpr, e1, e2)
+        val result = e3.compile().eval(ExpressionRequest(record1, null))
+
+        // assure
+        result shouldBe Success(Some(234f / 55))
+    }
+
+    "The ModuleOpr" should "return correct result" in {
+        val e1 = SExpression.variable("field2", DataType.Number)
+        val e2 = SExpression.constant(55)
+        val e3 = SExpression.operation(SExpOpType.ModuleOpr, e1, e2)
+        val result = e3.compile().eval(ExpressionRequest(record1, null))
+
+        // assure
+        result shouldBe Success(Some(234f % 55))
+    }
+
+    "The GreaterThan" should "return true" in {
+        val e1 = SExpression.variable("field2", DataType.Number)
+        val e2 = SExpression.constant(55)
+        val e4 = SExpression.operation(SExpOpType.GtOpr, e1, e2)
+        val result1 = e4.compile().eval(ExpressionRequest(record1, null))
+
+        // assure
+        result1 shouldBe Success(Some(true))
+    }
+
+    it should "return false" in {
+        val e1 = SExpression.variable("field2", DataType.Number)
+        val e3 = SExpression.constant(550)
+        val e5 = SExpression.operation(SExpOpType.GtOpr, e1, e3)
+        val result2 = e5.compile().eval(ExpressionRequest(record1, null))
+
+        // assure
+        result2 shouldBe Success(Some(false))
+    }
+
+    "The GreaterThanOrEqualTo" should "return true" in {
+        val e1 = SExpression.variable("field2", DataType.Number)
+        val e2 = SExpression.constant(55)
+        val e3 = SExpression.constant(234f)
+        val e4 = SExpression.operation(SExpOpType.GteOpr, e1, e2)
+        val e5 = SExpression.operation(SExpOpType.GteOpr, e1, e3)
+        val result1 = e4.compile().eval(ExpressionRequest(record1, null))
+        val result2 = e5.compile().eval(ExpressionRequest(record1, null))
+
+        // assure
+        result1 shouldBe Success(Some(true))
+        result2 shouldBe Success(Some(true))
+    }
+
+    it should "return false" in {
+        val e1 = SExpression.variable("field2", DataType.Number)
+        val e3 = SExpression.constant(550)
+        val e5 = SExpression.operation(SExpOpType.GteOpr, e1, e3)
+        val result2 = e5.compile().eval(ExpressionRequest(record1, null))
+
+        // assure
+        result2 shouldBe Success(Some(false))
+    }
+
+    "The LessThan" should "return true" in {
+        val e1 = SExpression.variable("field2", DataType.Number)
+        val e2 = SExpression.constant(550)
+        val e4 = SExpression.operation(SExpOpType.LtOpr, e1, e2)
+        val result1 = e4.compile().eval(ExpressionRequest(record1, null))
+
+        // assure
+        result1 shouldBe Success(Some(true))
+    }
+
+    it should "return false" in {
+        val e1 = SExpression.variable("field2", DataType.Number)
+        val e3 = SExpression.constant(55)
+        val e5 = SExpression.operation(SExpOpType.LtOpr, e1, e3)
+        val result2 = e5.compile().eval(ExpressionRequest(record1, null))
+
+        // assure
+        result2 shouldBe Success(Some(false))
+    }
+
+    "The LessThanOrEqualTo" should "return true" in {
+        val e1 = SExpression.variable("field2", DataType.Number)
+        val e2 = SExpression.constant(550)
+        val e3 = SExpression.constant(234f)
+        val e4 = SExpression.operation(SExpOpType.LteOpr, e1, e2)
+        val e5 = SExpression.operation(SExpOpType.LteOpr, e1, e3)
+        val result1 = e4.compile().eval(ExpressionRequest(record1, null))
+        val result2 = e5.compile().eval(ExpressionRequest(record1, null))
+
+        // assure
+        result1 shouldBe Success(Some(true))
+        result2 shouldBe Success(Some(true))
+    }
+
+    it should "return false" in {
+        val e1 = SExpression.variable("field2", DataType.Number)
+        val e3 = SExpression.constant(55)
+        val e5 = SExpression.operation(SExpOpType.LteOpr, e1, e3)
+        val result2 = e5.compile().eval(ExpressionRequest(record1, null))
+
+        // assure
+        result2 shouldBe Success(Some(false))
     }
 }
