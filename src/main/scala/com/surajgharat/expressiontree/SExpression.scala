@@ -47,12 +47,12 @@ import DataType._
 import SExpOpType._
 
 class SExpression(
-    etype: SExpType,
+    val etype: SExpType,
     val rtype: DataType,
-    value: Option[Any],
-    path: Option[String],
-    otype: Option[SExpOpType],
-    args: Array[SExpression]
+    val value: Option[Any],
+    val path: Option[String],
+    val otype: Option[SExpOpType],
+    val args: Array[SExpression]
 ) {
   def this(value: Any, rtype: DataType) = {
     this(Constant, rtype, Some(value), None, None, Array.empty[SExpression])
