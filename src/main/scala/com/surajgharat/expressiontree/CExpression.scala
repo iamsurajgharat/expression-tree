@@ -8,6 +8,10 @@ trait CExpression {
 }
 
 object CExpression {
+  def constant[T](value: T): CExpressionImpl[T] = new CExpressionImpl[T](_ =>
+    Success(if (value != null) Some(value) else None)
+  )
+
   def addOpr(
       e1: CExpressionImpl[Float],
       e2: CExpressionImpl[Float]
@@ -63,16 +67,26 @@ object CExpression {
     binaryOpr[Float, Float, Boolean](e1, e2, (x, y) => x < y, "<")
 
   def eqOpr(
-      e1: CExpressionImpl[Float],
-      e2: CExpressionImpl[Float]
+      e1: CExpressionImpl[Any],
+      e2: CExpressionImpl[Any]
   ): CExpressionImpl[Boolean] =
-    binaryOpr[Float, Float, Boolean](e1, e2, (x, y) => x == y, "==")
+    binaryOptionOpr[Any, Any, Boolean](
+      e1,
+      e2,
+      (x, y) => Some(doEquals(x, y)),
+      "=="
+    )
 
   def neqOpr(
-      e1: CExpressionImpl[Float],
-      e2: CExpressionImpl[Float]
+      e1: CExpressionImpl[Any],
+      e2: CExpressionImpl[Any]
   ): CExpressionImpl[Boolean] =
-    binaryOpr[Float, Float, Boolean](e1, e2, (x, y) => x != y, "!=")
+    binaryOptionOpr[Any, Any, Boolean](
+      e1,
+      e2,
+      (x, y) => Some(!doEquals(x, y)),
+      "!="
+    )
 
   def andOpr(
       e1: CExpressionImpl[Boolean],
@@ -115,13 +129,22 @@ object CExpression {
       }
     })
 
-    private def performBinaryOpWithRequiredCheck[T1,T2,T3](p1:Option[T1], p2:Option[T2], handler:(T1,T2) => T3, opName:String):Try[Option[T3]] = {
-      (p1, p2) match {
-        case (Some(a1), Some(a2)) => Success(Some(handler(a1,a2)))
-        case _ =>
-          Failure(new Exception(s"One or both arguments were not provided for binary operation [$opName]"))
-      }
+  private def performBinaryOpWithRequiredCheck[T1, T2, T3](
+      p1: Option[T1],
+      p2: Option[T2],
+      handler: (T1, T2) => T3,
+      opName: String
+  ): Try[Option[T3]] = {
+    (p1, p2) match {
+      case (Some(a1), Some(a2)) => Success(Some(handler(a1, a2)))
+      case _ =>
+        Failure(
+          new Exception(
+            s"One or both arguments were not provided for binary operation [$opName]"
+          )
+        )
     }
+  }
 
   private def binaryOptionOpr[T1, T2, T3](
       e1: CExpressionImpl[T1],
@@ -147,6 +170,13 @@ object CExpression {
       }
     })
 
+  private def doEquals[T1, T2](x: T1, y: T2): Boolean =
+    (x, y) match {
+      case (None, None)         => true
+      case (Some(p1), Some(p2)) => p1 == p2
+      case _                    => false
+    }
+
   private def unaryOpr[T1, T2](
       e1: CExpressionImpl[T1],
       handler: T1 => T2,
@@ -159,17 +189,25 @@ object CExpression {
       } yield r1
     })
 
-    private def performUnaryOpWithRequiredCheck[T1,T2](p1:Option[T1], handler:(T1) => T2, opName:String):Try[Option[T2]] = {
-      p1 match {
-        case Some(a1) => Success(Some(handler(a1)))
-        case _ =>
-          Failure(new Exception(s"The agument was not provided for uniary operation [$opName]"))
-      }
+  private def performUnaryOpWithRequiredCheck[T1, T2](
+      p1: Option[T1],
+      handler: (T1) => T2,
+      opName: String
+  ): Try[Option[T2]] = {
+    p1 match {
+      case Some(a1) => Success(Some(handler(a1)))
+      case _ =>
+        Failure(
+          new Exception(
+            s"The agument was not provided for uniary operation [$opName]"
+          )
+        )
     }
+  }
 
 }
 
-class CExpressionImpl[T](func: ExpressionRequest => Try[Option[T]])
+class CExpressionImpl[+T](func: ExpressionRequest => Try[Option[T]])
     extends CExpression {
   def eval(request: ExpressionRequest): Try[Option[T]] = {
     val result = func(request)

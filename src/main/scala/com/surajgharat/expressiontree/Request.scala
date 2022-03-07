@@ -9,7 +9,7 @@ trait Record {
 
 object DataType extends Enumeration {
   type DataType = Value
-  val Number, Text, Bool, Datetime = Value
+  val Number, Text, Bool, Datetime, Null = Value
 }
 
 class RecordImpl(private val data: Map[String, Value]) extends Record {

@@ -48,7 +48,7 @@ import SExpOpType._
 
 class SExpression(
     etype: SExpType,
-    rtype: DataType,
+    val rtype: DataType,
     value: Option[Any],
     path: Option[String],
     otype: Option[SExpOpType],
@@ -75,9 +75,11 @@ class SExpression(
       case DataType.Number =>
         new CExpressionImpl[Float](_ => tryValue())
       case DataType.Bool =>
-        new CExpressionImpl[Option[Option[Boolean]]](_ => tryValue())
+        new CExpressionImpl[Boolean](_ => tryValue())
       case DataType.Text =>
-        new CExpressionImpl[Option[String]](_ => tryValue())
+        new CExpressionImpl[String](_ => tryValue())
+      case DataType.Null =>
+        CExpression.constant(null:Any)
     }
   }
 
@@ -140,13 +142,13 @@ class SExpression(
         CExpression.ltOpr(e1, e2)
 
       case SExpOpType.EqOpr =>
-        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[Float]]
-        val e2 = args(1).compile().asInstanceOf[CExpressionImpl[Float]]
+        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[Any]]
+        val e2 = args(1).compile().asInstanceOf[CExpressionImpl[Any]]
         CExpression.eqOpr(e1, e2)
 
       case SExpOpType.NeqOpr =>
-        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[Float]]
-        val e2 = args(1).compile().asInstanceOf[CExpressionImpl[Float]]
+        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[Any]]
+        val e2 = args(1).compile().asInstanceOf[CExpressionImpl[Any]]
         CExpression.neqOpr(e1, e2)
 
       case SExpOpType.AndOpr =>
@@ -178,8 +180,12 @@ class SExpression(
 
 object SExpression {
   def constant(value: Float): SExpression = new SExpression(value, Number)
-  def constant(value: String): SExpression = new SExpression(value, Text)
+  def constant(value: String): SExpression = {
+    if(value == null || value.trim() == "") constantNull
+    else new SExpression(value, Text)
+  }
   def constant(value: Boolean): SExpression = new SExpression(value, Bool)
+  val constantNull : SExpression = new SExpression(null, DataType.Null)
 
   def variable(path: String, rtype: DataType): SExpression =
     new SExpression(
