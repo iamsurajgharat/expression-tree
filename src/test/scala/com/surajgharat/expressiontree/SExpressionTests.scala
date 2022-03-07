@@ -83,4 +83,27 @@ class SExpressionTests extends AnyFlatSpec with Matchers {
         // assure
         result.eval(null) shouldBe Success(Some(10))
     }
+
+    "startsWith" should "create CExpression for string startsWith function" in {
+        val s1 = SExpression.constant("Tony Stark")
+        val s2 = SExpression.constant("T")
+
+        // act
+        val result = SExpression.startsWith(s1, s2)
+
+        // assure
+        result.isSuccess shouldBe true
+        result.get.otype shouldBe Some(SExpOpType.StartsWithFun)
+    }
+
+    it should "fail if any of argument is not string" in {
+        val s1 = SExpression.constant("Tony Stark")
+        val s2 = SExpression.constant(34)
+
+        // act
+        val result = SExpression.startsWith(s1, s2)
+
+        // assure
+        result.isSuccess shouldBe false
+    }
 }

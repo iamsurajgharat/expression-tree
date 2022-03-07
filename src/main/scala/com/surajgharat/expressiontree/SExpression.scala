@@ -40,6 +40,20 @@ object SExpOpType extends Enumeration {
   val AndOpr = OpTypeValue(false, 2, DataType.Bool)
   val OrOpr = OpTypeValue(false, 2, DataType.Bool)
   val NegateOpr = OpTypeValue(false, 1, DataType.Bool)
+
+  // functions
+  /*
+    STARTSWITH
+    ENDSWITH
+    CONTAINS
+    IF()
+
+
+
+
+   */
+
+  val StartsWithFun = OpTypeValue(true, 2, DataType.Bool)
 }
 
 import SExpType._
@@ -79,7 +93,7 @@ class SExpression(
       case DataType.Text =>
         new CExpressionImpl[String](_ => tryValue())
       case DataType.Null =>
-        CExpression.constant(null:Any)
+        CExpression.constant(null: Any)
     }
   }
 
@@ -87,10 +101,16 @@ class SExpression(
     dt match {
       case DataType.Bool =>
         new CExpressionImpl[Boolean](req =>
-            Try(req.record.get[Bool](key).map(_.get().asInstanceOf[Boolean]))
+          Try(req.record.get[Bool](key).map(_.get().asInstanceOf[Boolean]))
         )
-      case DataType.Number => new CExpressionImpl[Float](req => Try(req.record.get[Number](key).map(_.get().asInstanceOf[Float])))
-      case DataType.Text => new CExpressionImpl[String](req => Try(req.record.get[Text](key).map(_.get().asInstanceOf[String])))
+      case DataType.Number =>
+        new CExpressionImpl[Float](req =>
+          Try(req.record.get[Number](key).map(_.get().asInstanceOf[Float]))
+        )
+      case DataType.Text =>
+        new CExpressionImpl[String](req =>
+          Try(req.record.get[Text](key).map(_.get().asInstanceOf[String]))
+        )
     }
   }
 
@@ -164,6 +184,12 @@ class SExpression(
       case SExpOpType.NegateOpr =>
         val e1 = args(0).compile().asInstanceOf[CExpressionImpl[Boolean]]
         CExpression.negateOpr(e1)
+
+      // functions
+      case SExpOpType.StartsWithFun => 
+        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[String]]
+        val e2 = args(1).compile().asInstanceOf[CExpressionImpl[String]]
+        CExpression.startsWithFun(e1, e2)
     }
   }
 
@@ -174,18 +200,19 @@ class SExpression(
 
   private def toType[T](obj: Any): Try[Option[T]] = obj match {
     case n1: T => Success(Some(n1))
-    case _     => Failure(new Exception(s"Given value is not of expected type [$obj]"))
+    case _ =>
+      Failure(new Exception(s"Given value is not of expected type [$obj]"))
   }
 }
 
 object SExpression {
   def constant(value: Float): SExpression = new SExpression(value, Number)
   def constant(value: String): SExpression = {
-    if(value == null || value.trim() == "") constantNull
+    if (value == null || value.trim() == "") constantNull
     else new SExpression(value, Text)
   }
   def constant(value: Boolean): SExpression = new SExpression(value, Bool)
-  val constantNull : SExpression = new SExpression(null, DataType.Null)
+  val constantNull: SExpression = new SExpression(null, DataType.Null)
 
   def variable(path: String, rtype: DataType): SExpression =
     new SExpression(
@@ -199,4 +226,15 @@ object SExpression {
 
   def operation(otype: SExpOpType, args: SExpression*): SExpression =
     new SExpression(otype, args: _*)
+
+  def startsWith(e1: SExpression, e2: SExpression): Try[SExpression] = {
+    if (e1.rtype != DataType.Text || e2.rtype != DataType.Text)
+      Failure(
+        new ETValidationException(
+          "StartsWith : Data type of one or more arguments was/were in correct"
+        )
+      )
+    else
+      Success(operation(SExpOpType.StartsWithFun, e1, e2))
+  }
 }
