@@ -1,4 +1,5 @@
-package com.surajgharat.expressiontree
+package io.github.iamsurajgharat.expressiontree
+package expressiontree
 
 trait Record {
   def getValue(path: String): Option[Value]

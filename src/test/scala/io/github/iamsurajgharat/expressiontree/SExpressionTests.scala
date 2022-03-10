@@ -1,8 +1,10 @@
-package com.surajgharat.expressiontree
+package io.github.iamsurajgharat
+package expressiontree
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import scala.util.Success
+import io.github.iamsurajgharat.expressiontree.expressiontree._
 
 class SExpressionTests extends AnyFlatSpec with Matchers {
     "Constant" should "create SExpression for given integer" in {

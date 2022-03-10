@@ -1,11 +1,12 @@
-package com.surajgharat.expressiontree
-
+package io.github.iamsurajgharat
+package expressiontree
 import org.scalatest.matchers.should.Matchers
 import scala.util.Failure
 import scala.util.Success
 import org.scalatest.flatspec.AnyFlatSpec
+import io.github.iamsurajgharat.expressiontree.expressiontree._
 
-class AddOperatorTests extends AnyFlatSpec with Matchers {
+class AddTests extends AnyFlatSpec with Matchers {
     val record : Record = new RecordImpl(
         Map(
             "field1" -> Number(10)

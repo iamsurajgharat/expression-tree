@@ -1,15 +1,10 @@
-package com.surajgharat.expressiontree.functions
+package io.github.iamsurajgharat.expressiontree
+package expressiontree
 
 import org.scalatest.flatspec.AnyFlatSpec
-import com.surajgharat.expressiontree.SExpression
+import io.github.iamsurajgharat.expressiontree.expressiontree._
 import scala.util.Success
 import org.scalatest.matchers.should.Matchers
-import com.surajgharat.expressiontree.RecordImpl
-import com.surajgharat.expressiontree.ExpressionRequest
-import com.surajgharat.expressiontree.DataType
-import com.surajgharat.expressiontree.Text
-import com.surajgharat.expressiontree.SExpOpType
-import com.surajgharat.expressiontree
 
 class StartsWithTests extends AnyFlatSpec with Matchers {
     val record = new RecordImpl(

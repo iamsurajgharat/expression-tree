@@ -1,4 +1,6 @@
-package com.surajgharat.expressiontree
+package io.github.iamsurajgharat.expressiontree
+package expressiontree
+
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure

@@ -1,4 +1,5 @@
-package com.surajgharat.expressiontree
+package io.github.iamsurajgharat.expressiontree
+package expressiontree
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers

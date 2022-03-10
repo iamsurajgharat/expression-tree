@@ -1,8 +1,10 @@
-package com.surajgharat.expressiontree
+package io.github.iamsurajgharat
+package expressiontree
 
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
+import io.github.iamsurajgharat.expressiontree.expressiontree._
 
 object SExpType extends Enumeration {
   type SExpType = Value
@@ -186,7 +188,7 @@ class SExpression(
         CExpression.negateOpr(e1)
 
       // functions
-      case SExpOpType.StartsWithFun => 
+      case SExpOpType.StartsWithFun =>
         val e1 = args(0).compile().asInstanceOf[CExpressionImpl[String]]
         val e2 = args(1).compile().asInstanceOf[CExpressionImpl[String]]
         CExpression.startsWithFun(e1, e2)
@@ -206,6 +208,7 @@ class SExpression(
 }
 
 object SExpression {
+  import DataType._
   def constant(value: Float): SExpression = new SExpression(value, Number)
   def constant(value: String): SExpression = {
     if (value == null || value.trim() == "") constantNull
@@ -230,7 +233,7 @@ object SExpression {
   def startsWith(e1: SExpression, e2: SExpression): Try[SExpression] = {
     if (e1.rtype != DataType.Text || e2.rtype != DataType.Text)
       Failure(
-        new ETValidationException(
+        new ExpValidationException(
           "StartsWith : Data type of one or more arguments was/were in correct"
         )
       )
