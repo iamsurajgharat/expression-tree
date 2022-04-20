@@ -50,7 +50,7 @@ class EqualsTests extends AnyFlatSpec with Matchers{
     it should "return true for null == null" in {
         // arrange
         val e1 = SExpression.variable("field2", DataType.Number)
-        val e2 = SExpression.constant(null)
+        val e2 = SExpression.constantNull
         val e3 = SExpression.operation(SExpOpType.EqOpr, e1, e2)
 
         val req = ExpressionRequest(record, null)

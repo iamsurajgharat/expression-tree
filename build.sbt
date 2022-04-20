@@ -12,6 +12,8 @@ lazy val root = (project in file("."))
     libraryDependencies += scalaTest % Test
   )
 
+libraryDependencies += "com.github.nscala-time" %% "nscala-time" % "2.30.0"
+
 ThisBuild / scmInfo := Some(
   ScmInfo(
     url("https://github.com/iamsurajgharat/expression-tree"),

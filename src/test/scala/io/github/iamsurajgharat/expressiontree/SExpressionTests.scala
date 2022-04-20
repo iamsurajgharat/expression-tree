@@ -91,7 +91,7 @@ class SExpressionTests extends AnyFlatSpec with Matchers {
         val s2 = SExpression.constant("T")
 
         // act
-        val result = SExpression.startsWith(s1, s2)
+        val result = SExpression.createFuncStartsWith(s1, s2)
 
         // assure
         result.isSuccess shouldBe true
@@ -103,7 +103,7 @@ class SExpressionTests extends AnyFlatSpec with Matchers {
         val s2 = SExpression.constant(34)
 
         // act
-        val result = SExpression.startsWith(s1, s2)
+        val result = SExpression.createFuncStartsWith(s1, s2)
 
         // assure
         result.isSuccess shouldBe false

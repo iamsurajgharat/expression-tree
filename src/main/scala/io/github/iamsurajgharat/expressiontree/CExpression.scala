@@ -107,7 +107,7 @@ object CExpression {
   ): CExpressionImpl[Boolean] = unaryOpr[Boolean, Boolean](e1, x => !x, "!")
 
   // functions
-  def startsWithFun(e1: CExpressionImpl[String], e2:CExpressionImpl[String]) : CExpressionImpl[Boolean] = new CExpressionImpl[Boolean](
+  def createFuncStartsWith(e1: CExpressionImpl[String], e2:CExpressionImpl[String]) : CExpressionImpl[Boolean] = new CExpressionImpl[Boolean](
     (req) => {
 
       def execute(a1:Option[String], a2:Option[String]) : Boolean = {
@@ -122,6 +122,11 @@ object CExpression {
         s2 <- e2.eval(req)
       } yield Some(execute(s1, s2))
     }
+  )
+
+  // 
+  def createFuncDay(e1: CExpressionImpl[org.joda.time.LocalDate]) : CExpressionImpl[Int] = new CExpressionImpl[Int](
+    req => e1.eval(req).map(x => x.map(y => y.getDayOfMonth()))
   )
 
   private def binaryOpr[T1, T2, T3](

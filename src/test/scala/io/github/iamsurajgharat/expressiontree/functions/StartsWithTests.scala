@@ -17,7 +17,7 @@ class StartsWithTests extends AnyFlatSpec with Matchers {
     "STARTSWITH" should """return true for "Tony Stark" and "T"""" in {
         val e1 = SExpression.constant("Tony Stark")
         val e2 = SExpression.constant("T")
-        val e3 = SExpression.startsWith(e1, e2).get
+        val e3 = SExpression.createFuncStartsWith(e1, e2).get
 
         // act
         val result = e3.compile().eval(null)
@@ -29,7 +29,7 @@ class StartsWithTests extends AnyFlatSpec with Matchers {
     it should "return false if any param is undefined" in {
         val e1 = SExpression.variable("field22", DataType.Text)
         val e2 = SExpression.constant("T")
-        val e3 = SExpression.startsWith(e1, e2).get
+        val e3 = SExpression.createFuncStartsWith(e1, e2).get
 
         // act
         val result = e3.compile().eval(ExpressionRequest(record, null))
@@ -44,7 +44,7 @@ class StartsWithTests extends AnyFlatSpec with Matchers {
         val e3 = SExpression.operation(SExpOpType.GtOpr, e1, e2)
         val e4 = SExpression.variable("field21", DataType.Text)
         val e5 = SExpression.constant("Tony")
-        val e6 = SExpression.startsWith(e4, e5).get
+        val e6 = SExpression.createFuncStartsWith(e4, e5).get
         val e7 = SExpression.operation(SExpOpType.AndOpr, e3, e6)
 
         // act

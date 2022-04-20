@@ -111,7 +111,7 @@ class NotEqualsTests extends AnyFlatSpec with Matchers {
     it should """return true for "ABC" != null""" in {
         // arrange
         val e1 = SExpression.variable("field22", DataType.Text)
-        val e2 = SExpression.constant(null)
+        val e2 = SExpression.constantNull
         val e3 = SExpression.operation(SExpOpType.NeqOpr, e1, e2)
 
         val req = ExpressionRequest(record, null)
@@ -126,7 +126,7 @@ class NotEqualsTests extends AnyFlatSpec with Matchers {
     it should "return false for null != null" in {
         // arrange
         val e1 = SExpression.variable("field101", DataType.Text)
-        val e2 = SExpression.constant(null)
+        val e2 = SExpression.constantNull
         val e3 = SExpression.operation(SExpOpType.NeqOpr, e1, e2)
 
         val req = ExpressionRequest(record, null)

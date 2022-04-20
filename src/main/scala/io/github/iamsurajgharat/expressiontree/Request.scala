@@ -10,7 +10,7 @@ trait Record {
 
 object DataType extends Enumeration {
   type DataType = Value
-  val Number, Text, Bool, Datetime, Null = Value
+  val AnyVal, Number, Text, Bool, Date, Datetime, Null = Value
 }
 
 class RecordImpl(private val data: Map[String, Value]) extends Record {
@@ -61,4 +61,13 @@ case class Bool(data:Boolean) extends Value {
 
 object Bool {
   implicit def booleanToBool(data:Boolean):Bool = Bool(data)
+}
+
+case class Date(data:org.joda.time.LocalDate) extends Value {
+  type T = org.joda.time.LocalDate
+  def get():T = data
+}
+
+object Date {
+  implicit def localDateToDate(data:org.joda.time.LocalDate):Date = Date(data)
 }

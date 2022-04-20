@@ -56,6 +56,10 @@ object SExpOpType extends Enumeration {
    */
 
   val StartsWithFun = OpTypeValue(true, 2, DataType.Bool)
+  val IfFun = OpTypeValue(true, 3, DataType.AnyVal)
+  val DayFun = OpTypeValue(true, 1, DataType.Number)
+  val HourFun = OpTypeValue(true, 1, DataType.Number)
+  val IsBlankFun = OpTypeValue(true, 1, DataType.Bool)
 }
 
 import SExpType._
@@ -112,6 +116,10 @@ class SExpression(
       case DataType.Text =>
         new CExpressionImpl[String](req =>
           Try(req.record.get[Text](key).map(_.get().asInstanceOf[String]))
+        )
+      case DataType.Date =>
+        new CExpressionImpl[org.joda.time.LocalDate](req =>
+          Try(req.record.get[Date](key).map(_.get().asInstanceOf[org.joda.time.LocalDate]))
         )
     }
   }
@@ -188,10 +196,16 @@ class SExpression(
         CExpression.negateOpr(e1)
 
       // functions
+      // STARTSWITH
       case SExpOpType.StartsWithFun =>
         val e1 = args(0).compile().asInstanceOf[CExpressionImpl[String]]
         val e2 = args(1).compile().asInstanceOf[CExpressionImpl[String]]
-        CExpression.startsWithFun(e1, e2)
+        CExpression.createFuncStartsWith(e1, e2)
+
+      // DAY
+      case SExpOpType.DayFun =>
+        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[org.joda.time.LocalDate]]
+        CExpression.createFuncDay(e1)
     }
   }
 
@@ -215,6 +229,7 @@ object SExpression {
     else new SExpression(value, Text)
   }
   def constant(value: Boolean): SExpression = new SExpression(value, Bool)
+  def constant(value: org.joda.time.LocalDate): SExpression = new SExpression(value, Date)
   val constantNull: SExpression = new SExpression(null, DataType.Null)
 
   def variable(path: String, rtype: DataType): SExpression =
@@ -230,14 +245,29 @@ object SExpression {
   def operation(otype: SExpOpType, args: SExpression*): SExpression =
     new SExpression(otype, args: _*)
 
-  def startsWith(e1: SExpression, e2: SExpression): Try[SExpression] = {
+  def createFuncStartsWith(e1: SExpression, e2: SExpression): Try[SExpression] = {
     if (e1.rtype != DataType.Text || e2.rtype != DataType.Text)
       Failure(
         new ExpValidationException(
-          "StartsWith : Data type of one or more arguments was/were in correct"
+          "StartsWith : Data type of one or more arguments was/were incorrect"
         )
       )
     else
       Success(operation(SExpOpType.StartsWithFun, e1, e2))
   }
+
+  def createFuncDay(e1: SExpression) : Try[SExpression] = {
+    if (e1.rtype != DataType.Date && e1.rtype != DataType.Datetime)
+      Failure(
+        new ExpValidationException(
+          "DAY : Data type of the argument was incorrect"
+        )
+      )
+    else
+      Success(operation(SExpOpType.DayFun, e1))
+  }
+
+  def createFuncHour(e1: SExpression) : Try[SExpression] = ???
+
+  def createFuncIsBlank(e1: SExpression) : Try[SExpression] = ???
 }
