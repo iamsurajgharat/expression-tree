@@ -26,7 +26,7 @@ class DayTests extends AnyFlatSpec with Matchers {
         result shouldBe Success(Some(15))
     }
 
-    it should """return none for blank field""" in {
+    it should "return none for blank field" in {
         val e1 = SExpression.variable("field32", DataType.Date)
         val e3 = SExpression.createFuncDay(e1).get
 
