@@ -49,10 +49,6 @@ object SExpOpType extends Enumeration {
     ENDSWITH
     CONTAINS
     IF()
-
-
-
-
    */
 
   val StartsWithFun = OpTypeValue(true, 2, DataType.Bool)
@@ -98,6 +94,10 @@ class SExpression(
         new CExpressionImpl[Boolean](_ => tryValue())
       case DataType.Text =>
         new CExpressionImpl[String](_ => tryValue())
+      case DataType.Date =>
+        new CExpressionImpl[org.joda.time.LocalDate](_ => tryValue())
+      case DataType.Datetime =>
+        new CExpressionImpl[org.joda.time.DateTime](_ => tryValue())
       case DataType.Null =>
         CExpression.constant(null: Any)
     }
@@ -107,19 +107,23 @@ class SExpression(
     dt match {
       case DataType.Bool =>
         new CExpressionImpl[Boolean](req =>
-          Try(req.record.get[Bool](key).map(_.get().asInstanceOf[Boolean]))
+          Try(req.record.get[RBool](key).map(_.get().asInstanceOf[Boolean]))
         )
       case DataType.Number =>
         new CExpressionImpl[Float](req =>
-          Try(req.record.get[Number](key).map(_.get().asInstanceOf[Float]))
+          Try(req.record.get[RNumber](key).map(_.get().asInstanceOf[Float]))
         )
       case DataType.Text =>
         new CExpressionImpl[String](req =>
-          Try(req.record.get[Text](key).map(_.get().asInstanceOf[String]))
+          Try(req.record.get[RText](key).map(_.get().asInstanceOf[String]))
         )
       case DataType.Date =>
         new CExpressionImpl[org.joda.time.LocalDate](req =>
-          Try(req.record.get[Date](key).map(_.get().asInstanceOf[org.joda.time.LocalDate]))
+          Try(req.record.get[RDate](key).map(_.get().asInstanceOf[org.joda.time.LocalDate]))
+        )
+      case DataType.Datetime =>
+        new CExpressionImpl[org.joda.time.DateTime](req =>
+          Try(req.record.get[RDateTime](key).map(_.get().asInstanceOf[org.joda.time.DateTime]))
         )
     }
   }
@@ -206,6 +210,30 @@ class SExpression(
       case SExpOpType.DayFun =>
         val e1 = args(0).compile().asInstanceOf[CExpressionImpl[org.joda.time.LocalDate]]
         CExpression.createFuncDay(e1)
+      
+      // HOUR
+      case SExpOpType.HourFun =>
+        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[org.joda.time.DateTime]]
+        CExpression.createFuncHour(e1)
+
+      // IF
+      case SExpOpType.IfFun =>
+        
+        val e1 = args(0).compile().asInstanceOf[CExpressionImpl[Boolean]]
+
+        def createFuncIf[T]() = {
+          val e2 = args(1).compile().asInstanceOf[CExpressionImpl[T]]
+          val e3 = args(2).compile().asInstanceOf[CExpressionImpl[T]]
+          CExpression.createFuncIf(e1, e2, e3)
+        }
+
+        args(1).rtype match {
+          case DataType.Bool => createFuncIf[Boolean]()
+          case DataType.Date => createFuncIf[org.joda.time.LocalDate]()
+          case DataType.Datetime => createFuncIf[org.joda.time.DateTime]()
+          case DataType.Number => createFuncIf[Float]()
+          case DataType.Text => createFuncIf[String]()
+        }
     }
   }
 
@@ -230,6 +258,7 @@ object SExpression {
   }
   def constant(value: Boolean): SExpression = new SExpression(value, Bool)
   def constant(value: org.joda.time.LocalDate): SExpression = new SExpression(value, Date)
+  def constant(value: org.joda.time.DateTime): SExpression = new SExpression(value, Datetime)
   val constantNull: SExpression = new SExpression(null, DataType.Null)
 
   def variable(path: String, rtype: DataType): SExpression =
@@ -267,7 +296,34 @@ object SExpression {
       Success(operation(SExpOpType.DayFun, e1))
   }
 
-  def createFuncHour(e1: SExpression) : Try[SExpression] = ???
+  def createFuncHour(e1: SExpression) : Try[SExpression] = {
+    if (e1.rtype != DataType.Datetime)
+      Failure(
+        new ExpValidationException(
+          "HOUR : Data type of the argument was incorrect"
+        )
+      )
+    else
+      Success(operation(SExpOpType.HourFun, e1))
+  }
+
+  def createFuncIf(e1:SExpression, e2:SExpression, e3:SExpression):Try[SExpression] = {
+    if(e1.rtype != DataType.Bool){
+      Failure(
+        new ExpValidationException(
+          "IF : first argument must of type bool"
+        )
+      )
+    } else if(e2.rtype != e3.rtype) {
+      Failure(
+        new ExpValidationException(
+          "IF : second and third arguments must have same return type"
+        )
+      )
+    } else {
+      Success(operation(SExpOpType.IfFun, e1, e2, e3))
+    }
+  }
 
   def createFuncIsBlank(e1: SExpression) : Try[SExpression] = ???
 }

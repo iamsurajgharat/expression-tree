@@ -9,9 +9,9 @@ import org.scalatest.matchers.should.Matchers
 class DayTests extends AnyFlatSpec with Matchers {
     val record = new RecordImpl(
         Map(
-            "field1" -> expressiontree.Number(25),
-            "field21" -> Text("Tony Stark"),
-            "field31" -> Date(new org.joda.time.LocalDate(2008, 10,15))
+            "field1" -> expressiontree.RNumber(25),
+            "field21" -> RText("Tony Stark"),
+            "field31" -> RDate(new org.joda.time.LocalDate(2008, 10,15))
         )
     )
 

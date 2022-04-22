@@ -9,8 +9,8 @@ import org.scalatest.matchers.should.Matchers
 class StartsWithTests extends AnyFlatSpec with Matchers {
     val record = new RecordImpl(
         Map(
-            "field1" -> expressiontree.Number(25),
-            "field21" -> Text("Tony Stark")
+            "field1" -> expressiontree.RNumber(25),
+            "field21" -> RText("Tony Stark")
         )
     )
 

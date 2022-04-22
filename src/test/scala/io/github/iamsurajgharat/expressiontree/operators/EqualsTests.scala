@@ -9,10 +9,10 @@ import io.github.iamsurajgharat.expressiontree.expressiontree._
 class EqualsTests extends AnyFlatSpec with Matchers{
     val record:Record = new RecordImpl(
                                         Map(
-                                            "field1" -> Number(10),
-                                            "field11" -> Bool(true),
-                                            "field12" -> Bool(false),
-                                            "field21" -> Text("Avengers")
+                                            "field1" -> RNumber(10),
+                                            "field11" -> RBool(true),
+                                            "field12" -> RBool(false),
+                                            "field21" -> RText("Avengers")
                                         )
                                     )
 

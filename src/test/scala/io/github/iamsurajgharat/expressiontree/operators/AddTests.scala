@@ -9,7 +9,7 @@ import io.github.iamsurajgharat.expressiontree.expressiontree._
 class AddTests extends AnyFlatSpec with Matchers {
     val record : Record = new RecordImpl(
         Map(
-            "field1" -> Number(10)
+            "field1" -> RNumber(10)
         )
     )
 

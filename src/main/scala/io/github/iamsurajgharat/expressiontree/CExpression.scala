@@ -124,10 +124,39 @@ object CExpression {
     }
   )
 
-  // 
+  // DAY
   def createFuncDay(e1: CExpressionImpl[org.joda.time.LocalDate]) : CExpressionImpl[Int] = new CExpressionImpl[Int](
     req => e1.eval(req).map(x => x.map(y => y.getDayOfMonth()))
   )
+
+  // HOUR
+  def createFuncHour(e1: CExpressionImpl[org.joda.time.DateTime]) : CExpressionImpl[Int] = new CExpressionImpl[Int](
+    req => e1.eval(req).map(x => x.map(y => y.getHourOfDay()))
+  )
+
+  // IF
+  def createFuncIf[T](e1:CExpressionImpl[Boolean], e2:CExpressionImpl[T], e3:CExpressionImpl[T]) = new CExpressionImpl[T](
+    req => {
+      val conditionResult = for {
+        r1 <- e1.eval(req)
+      } yield r1
+
+      conditionResult match {
+        case Failure(exception) => Failure(exception)
+        case Success(value) => 
+          if(value.isDefined && value.get) e2.eval(req) else e3.eval(req)
+      }
+    }
+  )
+
+  /*
+    error => error
+    true => x
+    blank => y
+    false => y
+
+  */
+
 
   private def binaryOpr[T1, T2, T3](
       e1: CExpressionImpl[T1],

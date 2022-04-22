@@ -13,9 +13,9 @@ class CExpressionTests extends AnyFlatSpec with Matchers {
     ))
 
     val record1 = new RecordImpl().
-                        put[Text]("field1", "ABCD").
-                        put[Number]("field2", 234f).
-                        put[Bool]("field3", true)
+                        put[RText]("field1", "ABCD").
+                        put[RNumber]("field2", 234f).
+                        put[RBool]("field3", true)
 
     "A constant CExpression" should "return correct number value" in {
         val e1 = SExpression.constant(10)
