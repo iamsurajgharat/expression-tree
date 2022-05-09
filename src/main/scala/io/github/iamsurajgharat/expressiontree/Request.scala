@@ -6,6 +6,7 @@ trait Record {
   def get[T <: RValue](path: String): Option[T]
   def put[T <: RValue](path: String, value: T): Record
   def remove(path: String): Record
+  def getKeys() : Set[String]
 }
 
 object DataType extends Enumeration {
@@ -19,6 +20,7 @@ class RecordImpl(private val data: Map[String, RValue]) extends Record {
   def get[T <: RValue](path: String): Option[T] = data.get(path).map(_.asInstanceOf[T])
   def put[T <: RValue](path: String, value: T): Record = new RecordImpl(data + (path -> value))
   def remove(path: String): Record = new RecordImpl(data - path)
+  def getKeys() : Set[String] = data.keySet
 }
 
 import DataType._
